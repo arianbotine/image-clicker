@@ -42,7 +42,8 @@ class ImageClicker:
         """
         self.images_dir = images_dir
         self.image_paths: List[str] = []
-        self.confidence = 0.85
+        self.image_sizes: List[Tuple[int, int]] = []
+        self.confidence = 0.95
         self.sleep_after_click = 0.5
         self.sleep_no_detection = 1.5
         
@@ -86,6 +87,9 @@ class ImageClicker:
         for img_path in self.image_paths:
             filename = os.path.basename(img_path)
             print(f"   📷 {filename}")
+            # Carrega o tamanho da imagem
+            with Image.open(img_path) as img:
+                self.image_sizes.append(img.size)
         
         return True
     
@@ -96,15 +100,25 @@ class ImageClicker:
         Returns:
             bool: True se um elemento foi encontrado e clicado, False caso contrário
         """
-        for img_path in self.image_paths:
+        for i, img_path in enumerate(self.image_paths):
             try:
                 # Tenta localizar a imagem na tela
                 location = pyautogui.locateOnScreen(
                     img_path, 
-                    confidence=self.confidence
+                    confidence=self.confidence,
+                    grayscale=True
                 )
                 
                 if location is not None:
+                    # Verifica se o tamanho corresponde ao template (tolerância de 10%)
+                    template_width, template_height = self.image_sizes[i]
+                    width_diff = abs(location.width - template_width) / template_width
+                    height_diff = abs(location.height - template_height) / template_height
+                    
+                    if width_diff > 0.1 or height_diff > 0.1:
+                        # Tamanho não corresponde, pula
+                        continue
+                    
                     # Calcula o centro da imagem encontrada
                     center = pyautogui.center(location)
                     
