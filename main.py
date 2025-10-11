@@ -119,11 +119,17 @@ class ImageClicker:
                         # Tamanho não corresponde, pula
                         continue
                     
+                    # Salva a posição atual do mouse
+                    original_position = pyautogui.position()
+                    
                     # Calcula o centro da imagem encontrada
                     center = pyautogui.center(location)
                     
                     # Clica no centro da imagem
                     pyautogui.click(center.x, center.y)
+                    
+                    # Retorna o mouse para a posição original
+                    pyautogui.moveTo(original_position.x, original_position.y)
                     
                     filename = os.path.basename(img_path)
                     print(f"🎯 Clique executado em '{filename}' nas coordenadas ({center.x}, {center.y})")
